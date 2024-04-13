@@ -1,0 +1,35 @@
+#######################################
+# Syntax Coloring Map For DFRobot_Geiger
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+DFRobot_Geiger	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+start	KEYWORD2
+pause	KEYWORD2
+getCPM	KEYWORD2
+getnSvh	KEYWORD2
+getuSvh	KEYWORD2
+random	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+e3 = 0	LITERAL1
+e4 = 1	LITERAL1
+eNone = 3	LITERAL1
+
+eGBK	LITERAL1
+eUTF8	LITERAL1
+
+eForbidAllBarcode	LITERAL1
+eEnableAllBarcode	LITERAL1
+eEnableDefaultcode	LITERAL1
