@@ -8,7 +8,7 @@ StartLimitBurst=1000
 [Service]
 Type=simple
 WorkingDirectory=/opt/nrc
-User=pi
+User=root
 ExecStart=/opt/nrc/geiger
 StandardOutput=append:/opt/nrc/log/geiger.log
 StandardError=append:/opt/nrc/log/geiger.log
