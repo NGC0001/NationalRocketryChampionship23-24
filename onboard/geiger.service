@@ -1,0 +1,21 @@
+[Unit]
+Description=Geiger Counter Routine
+After=multi-user.target
+
+StartLimitIntervalSec=1s
+StartLimitBurst=1000
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/nrc
+User=pi
+ExecStart=/opt/nrc/geiger
+StandardOutput=append:/opt/nrc/log/geiger.log
+StandardError=append:/opt/nrc/log/geiger.log
+
+Restart=on-failure
+# Max rocket speed: 142m/s
+RestartSec=10ms
+
+[Install]
+WantedBy=multi-user.target
