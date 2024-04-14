@@ -1,5 +1,6 @@
 #include <chrono>
 #include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -31,6 +32,7 @@
 constexpr const char *const GpioDir = "/sys/class/gpio/";
 constexpr const char *const PinDirection = "in";
 constexpr const char *const PinEdge = "falling";
+constexpr char PinActive = '0';
 
 constexpr int GeigerPin = 15;
 constexpr const char *const OutputPrefix = "data/geiger_out";
@@ -119,13 +121,23 @@ void poll_gpio_input(int pin, char *buf, size_t sz, std::function<void(char *, s
   while (true) {
     int res = poll(&pfd, 1, -1);
     EXIT_ERR(res < 0, "failed to poll");
-    if (res == 1 && (pfd.revents & POLLPRI)) {
-      size_t cnt = seek_and_read(fd, buf, sz);
-      f(buf, cnt);
-    } else {
-      // will this happen?
-      std::cerr << "unexpected poll result\n";
+    if (res != 1) {  // will this happen?
+      std::cerr << "unexpected poll return " << res << "\n";
+      continue;
     }
+    if (!(pfd.revents & POLLPRI)) {  // will this happen?
+      std::cerr << "unexpected poll revents " << pfd.revents << "\n";
+      continue;
+    }
+    size_t cnt = seek_and_read(fd, buf, sz);
+    if (cnt <= 0) {  // will this happen?
+      std::cerr << "read nothing from gpio\n";
+      continue;
+    }
+    if (buf[0] != PinActive) {
+      continue;
+    }
+    f(buf, cnt);
   }
 }
 
@@ -135,25 +147,31 @@ int main(int argc, char *argv[]) {
   (void)argv;
 
   const auto start = std::chrono::system_clock::now();
+  const auto start_ts = std::chrono::duration_cast<std::chrono::nanoseconds>(
+      start.time_since_epoch()).count();
   const std::time_t start_t = std::chrono::system_clock::to_time_t(start);
 
-  char startTimeStr[std::size("dd-mm-yy_HH-MM-SS")];
+  char startTimeStr[std::size("yy-mm-dd_HH-MM-SS")];
   int nbytes = std::strftime(std::data(startTimeStr), std::size(startTimeStr),
-      "%d-%m-%y_%H-%M-%S", std::gmtime(&start_t));
+      "%y-%m-%d_%H-%M-%S", std::localtime(&start_t));
   EXIT_IF(nbytes <= 0, "failed to format time");
-  std::string fOutput = std::string(OutputPrefix) + "_UTC_" + startTimeStr;
+  std::string fOutput = std::string(OutputPrefix)
+      + "_" + std::to_string(start_ts) + "_" + startTimeStr;
   std::ofstream ofsOutput(fOutput,
       std::ios_base::binary | std::ios_base::out | std::ios_base::app);
-  EXIT_IF(!ofsOutput, "failed to open output");
-  ofsOutput << "----------------\n" << std::ctime(&start_t) << std::endl;
+  EXIT_IF(!ofsOutput, "failed to open " + fOutput);
+  std::cout << "data file: " << fOutput << std::endl;
+  ofsOutput << std::put_time(std::localtime(&start_t), "%F %T %Z") << "\n"
+            << start_ts << "\n" << std::endl;
   EXIT_IF(!ofsOutput, "failed to write output");
-  auto flushTime = std::chrono::system_clock::now();
+  auto flushTime = start;
 
   char buffer[9];
   poll_gpio_input(GeigerPin, buffer, sizeof buffer - 1,
       [start, &flushTime, &ofsOutput] (char *buf, size_t cnt) {
+        // This function consumes around 200-500ns, sometimes 1ms.
+        // The time functions alone consume around 10-20us.
         buf[cnt] = 0;
-        // The time functions consume around 10-20us.
         const auto now = std::chrono::system_clock::now();
         const auto lapse = now - start;
         ofsOutput << std::chrono::duration_cast<std::chrono::nanoseconds>(lapse).count()
@@ -165,10 +183,6 @@ int main(int argc, char *argv[]) {
           ofsOutput << std::flush;
           flushTime = now;
         }
-        // TODO: remove following
-        std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
-                       std::chrono::system_clock::now() - now).count()
-                  << "ns\n";  // around 200-300ns
   });
 
   ofsOutput.close();
