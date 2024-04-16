@@ -1,3 +1,7 @@
+// Handling GPIO-connected switches:
+//   https://kevinboone.me/pi-button-pipe.html
+//   https://forums.raspberrypi.com/viewtopic.php?t=205986
+
 #include <chrono>
 #include <ctime>
 #include <iomanip>
@@ -129,13 +133,16 @@ void poll_gpio_input(int pin, char *buf, size_t sz, std::function<void(char *, s
       std::cerr << "unexpected poll revents " << pfd.revents << "\n";
       continue;
     }
+    if (pfd.revents != (POLLPRI | POLLERR)) {  // will this happen?
+      std::cerr << "strange poll revents " << pfd.revents << "\n";
+    }
     size_t cnt = seek_and_read(fd, buf, sz);
     if (cnt <= 0) {  // will this happen?
       std::cerr << "read nothing from gpio\n";
       continue;
     }
     if (buf[0] != PinActive) {
-      continue;
+      // continue;
     }
     f(buf, cnt);
   }
@@ -151,12 +158,12 @@ int main(int argc, char *argv[]) {
       start.time_since_epoch()).count();
   const std::time_t start_t = std::chrono::system_clock::to_time_t(start);
 
-  char startTimeStr[std::size("yy-mm-dd_HH-MM-SS")];
+  char startTimeStr[std::size("yymmdd-HHMMSS")];
   int nbytes = std::strftime(std::data(startTimeStr), std::size(startTimeStr),
-      "%y-%m-%d_%H-%M-%S", std::localtime(&start_t));
+      "%y%m%d-%H%M%S", std::localtime(&start_t));
   EXIT_IF(nbytes <= 0, "failed to format time");
   std::string fOutput = std::string(OutputPrefix)
-      + "_" + std::to_string(start_ts) + "_" + startTimeStr;
+      + "_" + startTimeStr + "_" + std::to_string(start_ts);
   std::ofstream ofsOutput(fOutput,
       std::ios_base::binary | std::ios_base::out | std::ios_base::app);
   EXIT_IF(!ofsOutput, "failed to open " + fOutput);
