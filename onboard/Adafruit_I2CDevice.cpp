@@ -271,14 +271,14 @@ bool Adafruit_I2CDevice::setSpeed(uint32_t desiredclk) {
 
   if ((F_CPU / 18) < desiredclk) {
 #ifdef DEBUG_SERIAL
-    Serial.println(F("I2C.setSpeed too high."));
+    DPRINTLN(F("I2C.setSpeed too high."));
 #endif
     return false;
   }
   uint32_t atwbr = ((F_CPU / desiredclk) - 16) / 2;
   if (atwbr > 16320) {
 #ifdef DEBUG_SERIAL
-    Serial.println(F("I2C.setSpeed too low."));
+    DPRINTLN(F("I2C.setSpeed too low."));
 #endif
     return false;
   }
@@ -299,10 +299,10 @@ bool Adafruit_I2CDevice::setSpeed(uint32_t desiredclk) {
   TWBR = atwbr;
 
 #ifdef DEBUG_SERIAL
-  Serial.print(F("TWSR prescaler = "));
-  Serial.println(pow(4, TWSR));
-  Serial.print(F("TWBR = "));
-  Serial.println(atwbr);
+  DPRINT(F("TWSR prescaler = "));
+  DPRINTLN(pow(4, TWSR));
+  DPRINT(F("TWBR = "));
+  DPRINTLN(atwbr);
 #endif
   return true;
 #elif (ARDUINO >= 157) && !defined(ARDUINO_STM32_FEATHER) &&                   \
