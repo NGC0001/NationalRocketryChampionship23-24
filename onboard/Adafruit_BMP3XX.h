@@ -22,13 +22,20 @@
 #ifndef __BMP3XX_H__
 #define __BMP3XX_H__
 
+#include <iostream>
+
 #include "bmp3.h"
+
+#define BMP3XX_I2C_BUS (1)  // The I2C bus number
 
 /*=========================================================================
     I2C ADDRESS/BITS
     -----------------------------------------------------------------------*/
 #define BMP3XX_DEFAULT_ADDRESS (0x77) ///< The default I2C address
 /*=========================================================================*/
+
+#define DPRINT(v) (std::cout << (v))
+#define DPRINTLN(v) (std::cout << (v) << '\n')
 
 /** Adafruit_BMP3XX Class for both I2C and SPI usage.
  *  Wraps the Bosch library for Arduino usage
@@ -58,6 +65,8 @@ public:
   double pressure;
 
 private:
+  int i2c_fd;
+
   bool _init(void);
 
   bool _filterEnabled, _tempOSEnabled, _presOSEnabled, _ODREnabled;

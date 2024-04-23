@@ -25,8 +25,20 @@
  *
  */
 
+#include <fcntl.h>
+#include <linux/i2c-dev.h>
+#include <math.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <unistd.h>
+
+#include <chrono>
+#include <cstdio>
+#include <string>
+#include <thread>
+
 #include "Adafruit_BMP3XX.h"
-#include "common.h"
 
 //#define BMP3XX_DEBUG
 
@@ -65,11 +77,22 @@ Adafruit_BMP3XX::Adafruit_BMP3XX(void) {
 */
 /**************************************************************************/
 bool Adafruit_BMP3XX::begin_I2C(uint8_t addr) {
+  const std::string i2c_file = std::string("/dev/i2c-")
+    + std::to_string(BMP3XX_I2C_BUS);
+  i2c_fd = open(i2c_file.c_str(), O_RDWR);  // never closed
+  if (i2c_fd < 0) {
+    return false;
+  }
+  if (ioctl(i2c_fd, I2C_SLAVE, addr) < 0) {
+    close(i2c_fd);
+    return false;
+  }
+
   the_sensor.chip_id = addr;
   the_sensor.intf = BMP3_I2C_INTF;
   the_sensor.read = &i2c_read;
   the_sensor.write = &i2c_write;
-  the_sensor.intf_ptr = NULL;
+  the_sensor.intf_ptr = &i2c_fd;
   the_sensor.dummy_byte = 0;
 
   return _init();
@@ -394,9 +417,13 @@ int8_t i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
   // DPRINT("I2C read address 0x"); DPRINT(reg_addr, HEX);
   // DPRINT(" len "); DPRINTLN(len, HEX);
 
-  // TODO:
-  // if (!g_i2c_dev->write_then_read(&reg_addr, 1, reg_data, len)) return 1;
-
+  int fd = *((int*)intf_ptr);
+  if (write(fd, &reg_addr, 1) != 1) {
+    return 1;
+  }
+  if (read(fd, reg_data, len) != len) {
+    return 1;
+  }
   return 0;
 }
 
@@ -410,15 +437,19 @@ int8_t i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
   // DPRINT("I2C write address 0x"); DPRINT(reg_addr, HEX);
   // DPRINT(" len "); DPRINTLN(len, HEX);
 
-  // TODO:
-  // if (!g_i2c_dev->write((uint8_t *)reg_data, len, true, &reg_addr, 1)) return 1;
-
+  int fd = *((int*)intf_ptr);
+  if (write(fd, &reg_addr, 1) != 1) {
+    return 1;
+  }
+  if (write(fd, reg_data, len) != len) {
+    return 1;
+  }
   return 0;
 }
 
-// TODO: nanosleep in a loop
-// https://forums.raspberrypi.com/viewtopic.php?t=17688
-static void delay_usec(uint32_t us, void *intf_ptr) { /*delayMicroseconds(us);*/ }
+static void delay_usec(uint32_t us, void *intf_ptr) {
+  std::this_thread::sleep_for(std::chrono::microseconds(us));
+}
 
 static int8_t validate_trimming_param(struct bmp3_dev *dev) {
   int8_t rslt;

@@ -15,13 +15,11 @@
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
 
-#include "Adafruit_BMP3XX.h"
-#include "common.h"
+#include <chrono>
+#include <cstdlib>
+#include <thread>
 
-#define BMP_SCK 13
-#define BMP_MISO 12
-#define BMP_MOSI 11
-#define BMP_CS 10
+#include "Adafruit_BMP3XX.h"
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
@@ -30,11 +28,9 @@ Adafruit_BMP3XX bmp;
 void setup() {
   DPRINTLN("Adafruit BMP388 / BMP390 test");
 
-  if (!bmp.begin_I2C()) {   // hardware I2C mode, can pass in address & alt Wire
-  //if (! bmp.begin_SPI(BMP_CS)) {  // hardware SPI mode  
-  //if (! bmp.begin_SPI(BMP_CS, BMP_SCK, BMP_MISO, BMP_MOSI)) {  // software SPI mode
+  if (!bmp.begin_I2C()) {
     DPRINTLN("Could not find a valid BMP3 sensor, check wiring!");
-    while (1);
+    std::exit(EXIT_FAILURE);
   }
 
   // Set up oversampling and filter initialization
@@ -45,9 +41,9 @@ void setup() {
 }
 
 void loop() {
-  if (! bmp.performReading()) {
+  if (!bmp.performReading()) {
     DPRINTLN("Failed to perform reading :(");
-    return;
+    std::exit(EXIT_FAILURE);
   }
   DPRINT("Temperature = ");
   DPRINT(bmp.temperature);
@@ -62,7 +58,7 @@ void loop() {
   DPRINTLN(" m");
 
   DPRINTLN("");
-  //TODO: delay(2000);
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 int main() {

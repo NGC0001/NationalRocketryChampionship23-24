@@ -2,16 +2,6 @@
 //   https://kevinboone.me/pi-button-pipe.html
 //   https://forums.raspberrypi.com/viewtopic.php?t=205986
 
-#include <chrono>
-#include <ctime>
-#include <iomanip>
-#include <iostream>
-#include <filesystem>
-#include <fstream>
-#include <functional>
-#include <string>
-#include <thread>
-
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -21,6 +11,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <iostream>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <string>
+#include <thread>
 
 #define EXIT_ERR(cond, msg) \
   EXIT_IF(cond, std::string{} + (msg) + ": " + strerror(errno))
@@ -32,7 +31,6 @@
     exit(EXIT_FAILURE);                                      \
   } } while (0)
 
-
 constexpr const char *const GpioDir = "/sys/class/gpio/";
 constexpr const char *const PinDirection = "in";
 constexpr const char *const PinEdge = "falling";
@@ -40,7 +38,6 @@ constexpr char PinActive = '0';
 
 constexpr int GeigerPin = 15;
 constexpr const char *const OutputPrefix = "data/geiger_out";
-
 
 void open_gpio_input(int pin) {
   // unexport pin
@@ -95,7 +92,6 @@ void open_gpio_input(int pin) {
   ofsPinEdge.close();
 }
 
-
 size_t seek_and_read(int fd, char *buf, size_t count) {
   EXIT_ERR(lseek(fd, 0, SEEK_SET) < 0, "failed to seek pin value");
   size_t total = 0;
@@ -108,7 +104,6 @@ size_t seek_and_read(int fd, char *buf, size_t count) {
   }
   return total;
 }
-
 
 void poll_gpio_input(int pin, char *buf, size_t sz, std::function<void(char *, size_t)> f) {
   open_gpio_input(pin);
@@ -147,7 +142,6 @@ void poll_gpio_input(int pin, char *buf, size_t sz, std::function<void(char *, s
     f(buf, cnt);
   }
 }
-
 
 int main(int argc, char *argv[]) {
   (void)argc;
