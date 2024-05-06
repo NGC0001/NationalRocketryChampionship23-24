@@ -5,3 +5,6 @@
 # I2C interface development
 * [raspberry pi using i2c](https://raspberry-projects.com/pi/programming-in-c/i2c/using-the-i2c-interface)
 * [linux i2c interface](https://www.kernel.org/doc/Documentation/i2c/dev-interface)
+
+# RaspberyPi I2C Pinout
+* [I2C Pinout](https://pinout.xyz/pinout/i2c)
