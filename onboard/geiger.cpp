@@ -21,6 +21,10 @@
 #include <string>
 #include <thread>
 
+#ifndef GEIGER_PIN
+#define GEIGER_PIN 22
+#endif
+
 #define EXIT_ERR(cond, msg) \
   EXIT_IF(cond, std::string{} + (msg) + ": " + strerror(errno))
 
@@ -36,7 +40,7 @@ constexpr const char *const PinDirection = "in";
 constexpr const char *const PinEdge = "falling";
 constexpr char PinActive = '0';
 
-constexpr int GeigerPin = 15;
+constexpr int GeigerPin = GEIGER_PIN;
 constexpr const char *const OutputPrefix = "data/geiger_out";
 
 void open_gpio_input(int pin) {
