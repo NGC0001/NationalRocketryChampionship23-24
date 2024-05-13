@@ -45,17 +45,12 @@ void loop() {
     DPRINTLN("Failed to perform reading :(");
     std::exit(EXIT_FAILURE);
   }
-  DPRINT("Temperature = ");
-  DPRINT(bmp.temperature);
-  DPRINTLN(" *C");
+  DPRINT("Temperature = "); DPRINT(bmp.temperature); DPRINTLN(" *C");
 
-  DPRINT("Pressure = ");
-  DPRINT(bmp.pressure / 100.0);
-  DPRINTLN(" hPa");
+  DPRINT("Pressure = "); DPRINT(bmp.pressure / 100.0); DPRINTLN(" hPa");
 
-  DPRINT("Approx. Altitude = ");
-  DPRINT(bmp.readAltitude(SEALEVELPRESSURE_HPA));
-  DPRINTLN(" m");
+  // DPRINT("Approx. Altitude = ");
+  // DPRINT(bmp.readAltitude(SEALEVELPRESSURE_HPA)); DPRINTLN(" m");
 
   DPRINTLN("");
   std::this_thread::sleep_for(std::chrono::milliseconds(50));

@@ -8,3 +8,6 @@
 
 # RaspberyPi I2C Pinout
 * [I2C Pinout](https://pinout.xyz/pinout/i2c)
+
+# I2C commands
+* `sudo i2cdetect -y 1`

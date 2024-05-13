@@ -13,7 +13,7 @@ geiger: geiger.cpp
 bmp.o: bmp3.c bmp3.h bmp3_defs.h
 	$(CC) -c $< -o $@
 
-ada.o: Adafruit_BMP3XX.cpp Adafruit_BMP3XX.h
+ada.o: Adafruit_BMP3XX.cpp Adafruit_BMP3XX.h bmp.o
 	$(CXX) -c $< -o $@
 
 altimeter: altimeter.cpp ada.o bmp.o

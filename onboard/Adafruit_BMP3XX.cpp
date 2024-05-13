@@ -40,7 +40,7 @@
 
 #include "Adafruit_BMP3XX.h"
 
-//#define BMP3XX_DEBUG
+#define BMP3XX_DEBUG
 
 // Our hardware interface functions
 static int8_t i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
@@ -87,6 +87,9 @@ bool Adafruit_BMP3XX::begin_I2C(uint8_t addr) {
     close(i2c_fd);
     return false;
   }
+#ifdef BMP3XX_DEBUG
+  DPRINT("I2C file opened, fd="); DPRINTLN(i2c_fd);
+#endif
 
   the_sensor.chip_id = addr;
   the_sensor.intf = BMP3_I2C_INTF;
@@ -105,58 +108,40 @@ bool Adafruit_BMP3XX::_init(void) {
   /* Reset the sensor */
   rslt = bmp3_soft_reset(&the_sensor);
 #ifdef BMP3XX_DEBUG
-  DPRINT("Reset result: ");
-  DPRINTLN(rslt);
+  DPRINT("Reset result: "); DPRINTLN(rslt);
 #endif
   if (rslt != BMP3_OK)
     return false;
 
   rslt = bmp3_init(&the_sensor);
 #ifdef BMP3XX_DEBUG
-  DPRINT("Init result: ");
-  DPRINTLN(rslt);
+  DPRINT("Init result: "); DPRINTLN(rslt);
 #endif
 
   rslt = validate_trimming_param(&the_sensor);
 #ifdef BMP3XX_DEBUG
-  DPRINT("Valtrim result: ");
-  DPRINTLN(rslt);
+  DPRINT("Valtrim result: "); DPRINTLN(rslt);
 #endif
 
   if (rslt != BMP3_OK)
     return false;
 
 #ifdef BMP3XX_DEBUG
-  DPRINT("T1 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_t1);
-  DPRINT("T2 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_t2);
-  DPRINT("T3 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_t3);
-  DPRINT("P1 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p1);
-  DPRINT("P2 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p2);
-  DPRINT("P3 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p3);
-  DPRINT("P4 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p4);
-  DPRINT("P5 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p5);
-  DPRINT("P6 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p6);
-  DPRINT("P7 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p7);
-  DPRINT("P8 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p8);
-  DPRINT("P9 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p9);
-  DPRINT("P10 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p10);
-  DPRINT("P11 = ");
-  DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p11);
-  // DPRINT("T lin = ");
-  // DPRINTLN(the_sensor.calib_data.reg_calib_data.t_lin);
+  DPRINT("T1 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_t1);
+  DPRINT("T2 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_t2);
+  DPRINT("T3 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_t3);
+  DPRINT("P1 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p1);
+  DPRINT("P2 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p2);
+  DPRINT("P3 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p3);
+  DPRINT("P4 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p4);
+  DPRINT("P5 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p5);
+  DPRINT("P6 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p6);
+  DPRINT("P7 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p7);
+  DPRINT("P8 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p8);
+  DPRINT("P9 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p9);
+  DPRINT("P10 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p10);
+  DPRINT("P11 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p11);
+  // DPRINT("T lin = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.t_lin);
 #endif
 
   setTemperatureOversampling(BMP3_NO_OVERSAMPLING);
@@ -278,7 +263,7 @@ bool Adafruit_BMP3XX::performReading(void) {
   /* Set the power mode */
   the_sensor.settings.op_mode = BMP3_MODE_FORCED;
 #ifdef BMP3XX_DEBUG
-  DPRINTLN(F("Setting power mode"));
+  DPRINTLN("Setting power mode");
 #endif
   rslt = bmp3_set_op_mode(&the_sensor);
   if (rslt != BMP3_OK)
@@ -290,7 +275,7 @@ bool Adafruit_BMP3XX::performReading(void) {
   /* Temperature and Pressure data are read and stored in the bmp3_data instance
    */
 #ifdef BMP3XX_DEBUG
-  DPRINTLN(F("Getting sensor data"));
+  DPRINTLN("Getting sensor data");
 #endif
   rslt = bmp3_get_sensor_data(sensor_comp, &data, &the_sensor);
   if (rslt != BMP3_OK)
@@ -298,13 +283,16 @@ bool Adafruit_BMP3XX::performReading(void) {
 
   /*
 #ifdef BMP3XX_DEBUG
-  DPRINTLN(F("Analyzing sensor data"));
+  DPRINTLN("Analyzing sensor data");
 #endif
   rslt = analyze_sensor_data(&data);
   if (rslt != BMP3_OK)
     return false;
     */
 
+#ifdef BMP3XX_DEBUG
+  DPRINTLN("Save temperature and pressure data");
+#endif
   /* Save the temperature and pressure data */
   temperature = data.temperature;
   pressure = data.pressure;
@@ -414,16 +402,24 @@ bool Adafruit_BMP3XX::setOutputDataRate(uint8_t odr) {
 /**************************************************************************/
 int8_t i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
                 void *intf_ptr) {
-  // DPRINT("I2C read address 0x"); DPRINT(reg_addr, HEX);
-  // DPRINT(" len "); DPRINTLN(len, HEX);
-
   int fd = *((int*)intf_ptr);
+#ifdef BMP3XX_DEBUG
+  DPRINT("I2C fd="); DPRINT(fd); DPRINTLN(" read");
+#endif
   if (write(fd, &reg_addr, 1) != 1) {
     return 1;
   }
   if (read(fd, reg_data, len) != len) {
     return 1;
   }
+#ifdef BMP3XX_DEBUG
+  DPRINT("    addr "); DPRINT(reg_addr); DPRINT(" len "); DPRINT(len);
+  DPRINT(" data read:");
+  for (int i = 0; i < len; ++i) {
+    DPRINT(" "); DPRINT(reg_data[i]);
+  }
+  DPRINTLN("");
+#endif
   return 0;
 }
 
@@ -434,16 +430,24 @@ int8_t i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
 /**************************************************************************/
 int8_t i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
                  void *intf_ptr) {
-  // DPRINT("I2C write address 0x"); DPRINT(reg_addr, HEX);
-  // DPRINT(" len "); DPRINTLN(len, HEX);
-
   int fd = *((int*)intf_ptr);
+#ifdef BMP3XX_DEBUG
+  DPRINT("I2C fd="); DPRINT(fd); DPRINTLN(" write");
+#endif
   if (write(fd, &reg_addr, 1) != 1) {
     return 1;
   }
   if (write(fd, reg_data, len) != len) {
     return 1;
   }
+#ifdef BMP3XX_DEBUG
+  DPRINT("    addr "); DPRINT(reg_addr); DPRINT(" len "); DPRINT(len);
+  DPRINT(" data written:");
+  for (int i = 0; i < len; ++i) {
+    DPRINT(" "); DPRINT(reg_data[i]);
+  }
+  DPRINTLN("");
+#endif
   return 0;
 }
 

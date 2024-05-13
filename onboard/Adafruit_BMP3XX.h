@@ -23,6 +23,7 @@
 #define __BMP3XX_H__
 
 #include <iostream>
+#include <utility>
 
 #include "bmp3.h"
 
@@ -34,8 +35,12 @@
 #define BMP3XX_DEFAULT_ADDRESS (0x77) ///< The default I2C address
 /*=========================================================================*/
 
-#define DPRINT(v) (std::cout << (v))
-#define DPRINTLN(v) (std::cout << (v) << '\n')
+constexpr int _NO_INT8(int8_t c) { return static_cast<int>(c); }
+constexpr int _NO_INT8(uint8_t c) { return static_cast<int>(c); }
+template<typename T> constexpr T&& _NO_INT8(T&& v) { return std::forward<T>(v); }
+
+#define DPRINT(v) (std::cout << _NO_INT8(v))
+#define DPRINTLN(v) (DPRINT(v) << '\n')
 
 /** Adafruit_BMP3XX Class for both I2C and SPI usage.
  *  Wraps the Bosch library for Arduino usage
