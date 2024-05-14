@@ -28,7 +28,7 @@ Adafruit_BMP3XX bmp;
 void setup() {
   DPRINTLN("Adafruit BMP388 / BMP390 test");
 
-  if (!bmp.begin_I2C()) {
+  if (!bmp.begin_I2C(BMP3XX_I2C_BUS, BMP3XX_DEFAULT_ADDRESS)) {
     DPRINTLN("Could not find a valid BMP3 sensor, check wiring!");
     std::exit(EXIT_FAILURE);
   }
@@ -49,8 +49,8 @@ void loop() {
 
   DPRINT("Pressure = "); DPRINT(bmp.pressure / 100.0); DPRINTLN(" hPa");
 
-  // DPRINT("Approx. Altitude = ");
-  // DPRINT(bmp.readAltitude(SEALEVELPRESSURE_HPA)); DPRINTLN(" m");
+  DPRINT("Approx. Altitude = ");
+  DPRINT(bmp.readAltitude(SEALEVELPRESSURE_HPA)); DPRINTLN(" m");
 
   DPRINTLN("");
   std::this_thread::sleep_for(std::chrono::milliseconds(50));

@@ -27,11 +27,17 @@
 
 #include <fcntl.h>
 #include <linux/i2c-dev.h>
+#include <linux/i2c.h>
 #include <math.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
+
+extern "C" {
+#include <i2c/smbus.h>
+}
 
 #include <chrono>
 #include <cstdio>
@@ -76,22 +82,23 @@ Adafruit_BMP3XX::Adafruit_BMP3XX(void) {
     @return True on sensor initialization success. False on failure.
 */
 /**************************************************************************/
-bool Adafruit_BMP3XX::begin_I2C(uint8_t addr) {
-  const std::string i2c_file = std::string("/dev/i2c-")
-    + std::to_string(BMP3XX_I2C_BUS);
+bool Adafruit_BMP3XX::begin_I2C(uint8_t bus, uint8_t addr) {
+  const std::string i2c_file = std::string("/dev/i2c-") + std::to_string(bus);
   i2c_fd = open(i2c_file.c_str(), O_RDWR);  // never closed
   if (i2c_fd < 0) {
     return false;
   }
-  if (ioctl(i2c_fd, I2C_SLAVE, addr) < 0) {
+  unsigned long funcs = 0;
+  if (ioctl(i2c_fd, I2C_SLAVE_FORCE, addr) < 0
+      || ioctl(i2c_fd, I2C_FUNCS, &funcs) < 0
+      || !(funcs & I2C_FUNC_SMBUS_READ_I2C_BLOCK)
+      || !(funcs & I2C_FUNC_SMBUS_WRITE_I2C_BLOCK)
+      || i2c_smbus_read_byte_data(i2c_fd, BMP3_REG_CHIP_ID) != BMP3_CHIP_ID) {
     close(i2c_fd);
     return false;
   }
-#ifdef BMP3XX_DEBUG
-  DPRINT("I2C file opened, fd="); DPRINTLN(i2c_fd);
-#endif
 
-  the_sensor.chip_id = addr;
+  the_sensor.chip_id = addr; // note, this `chip_id` is not the BMP3_CHIP_ID
   the_sensor.intf = BMP3_I2C_INTF;
   the_sensor.read = &i2c_read;
   the_sensor.write = &i2c_write;
@@ -403,23 +410,12 @@ bool Adafruit_BMP3XX::setOutputDataRate(uint8_t odr) {
 int8_t i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
                 void *intf_ptr) {
   int fd = *((int*)intf_ptr);
-#ifdef BMP3XX_DEBUG
-  DPRINT("I2C fd="); DPRINT(fd); DPRINTLN(" read");
-#endif
-  if (write(fd, &reg_addr, 1) != 1) {
+  if (len > I2C_SMBUS_BLOCK_MAX) {
     return 1;
   }
-  if (read(fd, reg_data, len) != len) {
+  if (i2c_smbus_read_i2c_block_data(fd, reg_addr, len, reg_data) != (int)len) {
     return 1;
   }
-#ifdef BMP3XX_DEBUG
-  DPRINT("    addr "); DPRINT(reg_addr); DPRINT(" len "); DPRINT(len);
-  DPRINT(" data read:");
-  for (int i = 0; i < len; ++i) {
-    DPRINT(" "); DPRINT(reg_data[i]);
-  }
-  DPRINTLN("");
-#endif
   return 0;
 }
 
@@ -431,27 +427,17 @@ int8_t i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
 int8_t i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
                  void *intf_ptr) {
   int fd = *((int*)intf_ptr);
-#ifdef BMP3XX_DEBUG
-  DPRINT("I2C fd="); DPRINT(fd); DPRINTLN(" write");
-#endif
-  if (write(fd, &reg_addr, 1) != 1) {
+  if (len > I2C_SMBUS_BLOCK_MAX) {
     return 1;
   }
-  if (write(fd, reg_data, len) != len) {
+  if (i2c_smbus_write_i2c_block_data(fd, reg_addr, len, reg_data) != 0) {
     return 1;
   }
-#ifdef BMP3XX_DEBUG
-  DPRINT("    addr "); DPRINT(reg_addr); DPRINT(" len "); DPRINT(len);
-  DPRINT(" data written:");
-  for (int i = 0; i < len; ++i) {
-    DPRINT(" "); DPRINT(reg_data[i]);
-  }
-  DPRINTLN("");
-#endif
   return 0;
 }
 
 static void delay_usec(uint32_t us, void *intf_ptr) {
+  (void)intf_ptr;
   std::this_thread::sleep_for(std::chrono::microseconds(us));
 }
 

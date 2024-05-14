@@ -50,7 +50,7 @@ class Adafruit_BMP3XX {
 public:
   Adafruit_BMP3XX();
 
-  bool begin_I2C(uint8_t addr = BMP3XX_DEFAULT_ADDRESS);
+  bool begin_I2C(uint8_t bus, uint8_t addr);
   uint8_t chipID(void);
   float readTemperature(void);
   float readPressure(void);
