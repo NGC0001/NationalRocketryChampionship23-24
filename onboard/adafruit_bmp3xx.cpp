@@ -430,7 +430,7 @@ int8_t i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
   if (len > I2C_SMBUS_BLOCK_MAX) {
     return 1;
   }
-  if (i2c_smbus_write_i2c_block_data(fd, reg_addr, len, reg_data) != 0) {
+  if (i2c_smbus_write_i2c_block_data(fd, reg_addr, len, reg_data) < 0) {
     return 1;
   }
   return 0;

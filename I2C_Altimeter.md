@@ -27,7 +27,8 @@
 * [adafruit bmp3xx python lib](https://github.com/adafruit/Adafruit_CircuitPython_BMP3XX)
 * note, i2c direct file I/O interface with `read`/`write`:
   - for reading, `write` register address, then `read` data
-  - for writing, combine register address and data into single buffer, then `write` this buffer
+  - for writing, **combine** register address and data into single buffer, then `write` this buffer
+  - i2c/smbus seems to work in so-called 'transaction's, and is not fully supported by file I/O interface
 * note, i2c smbus `i2c_smbus_read_block_data`/`i2c_smbus_write_block_data` seems not working on raspberry pi
   - try `i2c_smbus_read_i2c_block_data`/`i2c_smbus_write_i2c_block_data` instead
 * note, for i2c ioctl smbus method, use `I2C_SMBUS` request and `I2C_SMBUS_I2C_BLOCK_DATA` size option
