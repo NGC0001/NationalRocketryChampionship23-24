@@ -1,5 +1,5 @@
 /*!
- * @file Adafruit_BMP3XX.h
+ * @file adafruit_bmp3xx.h
  *
  * Adafruit BMP3XX temperature & barometric pressure sensor driver
  *

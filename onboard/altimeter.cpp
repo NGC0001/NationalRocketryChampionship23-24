@@ -19,7 +19,7 @@
 #include <cstdlib>
 #include <thread>
 
-#include "Adafruit_BMP3XX.h"
+#include "adafruit_bmp3xx.h"
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
