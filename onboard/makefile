@@ -1,11 +1,14 @@
 CC = gcc
 CXX = g++
 
-CFLAG = -fsanitize=address -g # -DBMP3XX_DEBUG
+DEBUG_CFLAG = -fsanitize=address -g # -DBMP3XX_DEBUG
+DEBUG_LFLAG = -static-libasan
+
+CFLAG = # $(DEBUG_CFLAG)
 C_CFLAG = $(CFLAG)
 CXX_CFLAG = $(CFLAG) -std=c++17 -Wall -Wextra -Wfloat-equal -Wpedantic -Wvla -Werror
 
-LFLAG = -lm -li2c -static-libasan
+LFLAG = -lm -li2c # $(DEBUG_LFLAG)
 
 all: geiger altimeter
 
