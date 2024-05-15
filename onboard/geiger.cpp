@@ -1,7 +1,3 @@
-// Handling GPIO-connected switches:
-//   https://kevinboone.me/pi-button-pipe.html
-//   https://forums.raspberrypi.com/viewtopic.php?t=205986
-
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -13,27 +9,19 @@
 
 #include <chrono>
 #include <ctime>
-#include <iomanip>
-#include <iostream>
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <iomanip>
+#include <iostream>
 #include <string>
 #include <thread>
+
+#include "common.h"
 
 #ifndef GEIGER_PIN
 #define GEIGER_PIN 22
 #endif
-
-#define EXIT_ERR(cond, msg) \
-  EXIT_IF(cond, std::string{} + (msg) + ": " + strerror(errno))
-
-#define EXIT_IF(cond, msg)                                   \
-  do { if (cond) {                                           \
-    std::cerr << "[" << __LINE__ << " " << __func__ << "] "; \
-    std::cerr << (msg) << std::endl;                         \
-    exit(EXIT_FAILURE);                                      \
-  } } while (0)
 
 constexpr const char *const GpioDir = "/sys/class/gpio/";
 constexpr const char *const PinDirection = "in";
@@ -41,7 +29,7 @@ constexpr const char *const PinEdge = "falling";
 constexpr char PinActive = '0';
 
 constexpr int GeigerPin = GEIGER_PIN;
-constexpr const char *const OutputPrefix = "data/geiger_out";
+constexpr const char *const OutputPrefix = "data/g_";
 
 void open_gpio_input(int pin) {
   // unexport pin
@@ -148,8 +136,7 @@ void poll_gpio_input(int pin, char *buf, size_t sz, std::function<void(char *, s
 }
 
 int main(int argc, char *argv[]) {
-  (void)argc;
-  (void)argv;
+  const char *const outputPostfix = argc > 1 ? argv[1] : "";
 
   const auto start = std::chrono::system_clock::now();
   const auto start_ts = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -161,7 +148,7 @@ int main(int argc, char *argv[]) {
       "%y%m%d-%H%M%S", std::localtime(&start_t));
   EXIT_IF(nbytes <= 0, "failed to format time");
   std::string fOutput = std::string(OutputPrefix)
-      + "_" + startTimeStr + "_" + std::to_string(start_ts);
+      + startTimeStr + "_" + std::to_string(start_ts) + outputPostfix;
   std::ofstream ofsOutput(fOutput,
       std::ios_base::binary | std::ios_base::out | std::ios_base::app);
   EXIT_IF(!ofsOutput, "failed to open " + fOutput);
@@ -179,7 +166,7 @@ int main(int argc, char *argv[]) {
         buf[cnt] = 0;
         const auto now = std::chrono::system_clock::now();
         const auto lapse = now - start;
-        ofsOutput << std::chrono::duration_cast<std::chrono::nanoseconds>(lapse).count()
+        ofsOutput << " " << std::chrono::duration_cast<std::chrono::nanoseconds>(lapse).count()
                   << " " << buf;
         EXIT_IF(!ofsOutput, "failed to write output");
         const auto flushLapse = now - flushTime;

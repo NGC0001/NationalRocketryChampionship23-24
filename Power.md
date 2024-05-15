@@ -6,4 +6,9 @@
 
 
 ## Fuse
+
 - [recoverable fuse](https://community.element14.com/products/raspberry-pi/f/forum/11461/raspberry-pi-fuse---have-you-ever-tripped-it)
+
+## Useful commands
+
+- `vcgencmd` for monitoring system states

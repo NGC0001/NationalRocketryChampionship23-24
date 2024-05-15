@@ -1,4 +1,1 @@
 - [] geiger seems not starting automatically sometimes
-- [] add another startup script other than systemd
-- [] simply bmp3 configuration setting (may not need configuration setting before each reading, may be once is enough)
-- [] write altimeter data into file, add auto startup for altimeter

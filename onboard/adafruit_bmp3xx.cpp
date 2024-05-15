@@ -46,7 +46,18 @@ extern "C" {
 
 #include "adafruit_bmp3xx.h"
 
-#define BMP3XX_DEBUG
+#ifdef BMP3XX_DEBUG
+namespace {
+constexpr int _NO_INT8(int8_t c) { return static_cast<int>(c); }
+constexpr int _NO_INT8(uint8_t c) { return static_cast<int>(c); }
+template<typename T> constexpr T&& _NO_INT8(T&& v) { return std::forward<T>(v); }
+} // namespace
+#define DPRINT(v) (std::cout << _NO_INT8(v))
+#define DPRINTLN(v) (std::cout << _NO_INT8(v) << '\n')
+#else
+#define DPRINT(v)
+#define DPRINTLN(v)
+#endif
 
 // Our hardware interface functions
 static int8_t i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
@@ -114,26 +125,19 @@ bool Adafruit_BMP3XX::_init(void) {
 
   /* Reset the sensor */
   rslt = bmp3_soft_reset(&the_sensor);
-#ifdef BMP3XX_DEBUG
   DPRINT("Reset result: "); DPRINTLN(rslt);
-#endif
   if (rslt != BMP3_OK)
     return false;
 
   rslt = bmp3_init(&the_sensor);
-#ifdef BMP3XX_DEBUG
   DPRINT("Init result: "); DPRINTLN(rslt);
-#endif
 
   rslt = validate_trimming_param(&the_sensor);
-#ifdef BMP3XX_DEBUG
   DPRINT("Valtrim result: "); DPRINTLN(rslt);
-#endif
 
   if (rslt != BMP3_OK)
     return false;
 
-#ifdef BMP3XX_DEBUG
   DPRINT("T1 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_t1);
   DPRINT("T2 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_t2);
   DPRINT("T3 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_t3);
@@ -149,7 +153,6 @@ bool Adafruit_BMP3XX::_init(void) {
   DPRINT("P10 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p10);
   DPRINT("P11 = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.par_p11);
   // DPRINT("T lin = "); DPRINTLN(the_sensor.calib_data.reg_calib_data.t_lin);
-#endif
 
   setTemperatureOversampling(BMP3_NO_OVERSAMPLING);
   setPressureOversampling(BMP3_NO_OVERSAMPLING);
@@ -259,9 +262,7 @@ bool Adafruit_BMP3XX::performReading(void) {
   // settings_sel |= BMP3_DRDY_EN_SEL | BMP3_LEVEL_SEL | BMP3_LATCH_SEL;
 
   /* Set the desired sensor configuration */
-#ifdef BMP3XX_DEBUG
   DPRINTLN("Setting sensor settings");
-#endif
   rslt = bmp3_set_sensor_settings(settings_sel, &the_sensor);
 
   if (rslt != BMP3_OK)
@@ -269,9 +270,7 @@ bool Adafruit_BMP3XX::performReading(void) {
 
   /* Set the power mode */
   the_sensor.settings.op_mode = BMP3_MODE_FORCED;
-#ifdef BMP3XX_DEBUG
   DPRINTLN("Setting power mode");
-#endif
   rslt = bmp3_set_op_mode(&the_sensor);
   if (rslt != BMP3_OK)
     return false;
@@ -281,25 +280,19 @@ bool Adafruit_BMP3XX::performReading(void) {
 
   /* Temperature and Pressure data are read and stored in the bmp3_data instance
    */
-#ifdef BMP3XX_DEBUG
   DPRINTLN("Getting sensor data");
-#endif
   rslt = bmp3_get_sensor_data(sensor_comp, &data, &the_sensor);
   if (rslt != BMP3_OK)
     return false;
 
   /*
-#ifdef BMP3XX_DEBUG
   DPRINTLN("Analyzing sensor data");
-#endif
   rslt = analyze_sensor_data(&data);
   if (rslt != BMP3_OK)
     return false;
-    */
+  */
 
-#ifdef BMP3XX_DEBUG
   DPRINTLN("Save temperature and pressure data");
-#endif
   /* Save the temperature and pressure data */
   temperature = data.temperature;
   pressure = data.pressure;
@@ -409,6 +402,7 @@ bool Adafruit_BMP3XX::setOutputDataRate(uint8_t odr) {
 /**************************************************************************/
 int8_t i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
                 void *intf_ptr) {
+  DPRINTLN("i2c_read");
   int fd = *((int*)intf_ptr);
   if (len > I2C_SMBUS_BLOCK_MAX) {
     return 1;
@@ -426,6 +420,7 @@ int8_t i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
 /**************************************************************************/
 int8_t i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
                  void *intf_ptr) {
+  DPRINTLN("i2c_write");
   int fd = *((int*)intf_ptr);
   if (len > I2C_SMBUS_BLOCK_MAX) {
     return 1;
@@ -437,6 +432,7 @@ int8_t i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
 }
 
 static void delay_usec(uint32_t us, void *intf_ptr) {
+  DPRINTLN("delay_usec");
   (void)intf_ptr;
   std::this_thread::sleep_for(std::chrono::microseconds(us));
 }

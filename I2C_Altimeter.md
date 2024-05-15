@@ -15,6 +15,7 @@
 * [Adafruit BMP388 cpp library](https://github.com/adafruit/Adafruit_BMP3XX)
 * [BMP280 Pinout](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/pinouts)
 * [BMP3 API](https://github.com/boschsensortec/BMP3_SensorAPI)
+* [BMP388 Datasheet](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp388-ds001.pdf)
 
 ## I2C interface references
 

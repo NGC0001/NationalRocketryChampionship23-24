@@ -1,5 +1,5 @@
 [Unit]
-Description=Geiger Counter Routine
+Description=Altimeter Routine
 
 StartLimitIntervalSec=1s
 StartLimitBurst=1000
@@ -8,9 +8,9 @@ StartLimitBurst=1000
 Type=simple
 WorkingDirectory=/opt/nrc
 User=root
-ExecStart=/opt/nrc/geiger
-StandardOutput=append:/opt/nrc/log/geiger.log
-StandardError=append:/opt/nrc/log/geiger.log
+ExecStart=/opt/nrc/altimeter
+StandardOutput=append:/opt/nrc/log/altimeter.log
+StandardError=append:/opt/nrc/log/altimeter.log
 
 Restart=on-failure
 # Max rocket speed: 142m/s
