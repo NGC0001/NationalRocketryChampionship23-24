@@ -1,5 +1,6 @@
 [Unit]
 Description=Altimeter Routine
+After=time-set.target
 
 StartLimitIntervalSec=1s
 StartLimitBurst=1000

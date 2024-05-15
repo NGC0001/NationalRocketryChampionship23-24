@@ -1,1 +1,1 @@
-- [] geiger seems not starting automatically sometimes
+- [] check startup of geiger and altimeter; check system clock without network
