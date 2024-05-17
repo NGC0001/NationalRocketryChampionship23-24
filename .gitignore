@@ -1,7 +1,7 @@
 .DS_Store
 *.swp
+*.drawio.bkp
 
 *.o
-
 onboard/geiger
 onboard/altimeter
