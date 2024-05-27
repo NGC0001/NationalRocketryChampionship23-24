@@ -33,3 +33,9 @@
 * note, i2c smbus `i2c_smbus_read_block_data`/`i2c_smbus_write_block_data` seems not working on raspberry pi
   - try `i2c_smbus_read_i2c_block_data`/`i2c_smbus_write_i2c_block_data` instead
 * note, for i2c ioctl smbus method, use `I2C_SMBUS` request and `I2C_SMBUS_I2C_BLOCK_DATA` size option
+
+## Calculation of pressure altitude
+
+* [Barometric formula](https://en.wikipedia.org/wiki/Barometric_formula)
+* [how to calculate barometric altitude](https://physics.stackexchange.com/questions/333475/how-to-calculate-altitude-from-current-temperature-and-pressure)
+* [pressure-altitude calculator](https://www.mide.com/air-pressure-at-altitude-calculator)
