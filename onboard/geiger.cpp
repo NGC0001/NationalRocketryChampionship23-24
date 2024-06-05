@@ -136,6 +136,7 @@ void poll_gpio_input(int pin, char *buf, size_t sz, std::function<void(char *, s
 }
 
 int main(int argc, char *argv[]) {
+  std::cout << "\n";
   const char *const outputPostfix = argc > 1 ? argv[1] : "";
 
   const auto start = std::chrono::system_clock::now();
@@ -143,12 +144,7 @@ int main(int argc, char *argv[]) {
       start.time_since_epoch()).count();
   const std::time_t start_t = std::chrono::system_clock::to_time_t(start);
 
-  char startTimeStr[std::size("yymmdd-HHMMSS")];
-  int nbytes = std::strftime(std::data(startTimeStr), std::size(startTimeStr),
-      "%y%m%d-%H%M%S", std::localtime(&start_t));
-  EXIT_IF(nbytes <= 0, "failed to format time");
-  std::string fOutput = std::string(OutputPrefix)
-      + startTimeStr + "_" + std::to_string(start_ts) + outputPostfix;
+  std::string fOutput = get_filename(start, OutputPrefix, outputPostfix);
   std::ofstream ofsOutput(fOutput,
       std::ios_base::binary | std::ios_base::out | std::ios_base::app);
   EXIT_IF(!ofsOutput, "failed to open " + fOutput);

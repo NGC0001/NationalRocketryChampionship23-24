@@ -6,3 +6,5 @@
   * start: `sudo ip link set wlan0 up`
 
 - `wpa_supplicant` wifi config file: `/etc/wpa_supplicant/wpa_supplicant.conf`
+
+- modify time: sudo date -s "Jun 4 14:39:00 BST 2024"

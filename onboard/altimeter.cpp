@@ -17,6 +17,7 @@
 constexpr const char *const OutputPrefix = "data/a_";
 
 int main(int argc, char *argv[]) {
+  std::cout << "\n";
   const char *const outputPostfix = argc > 1 ? argv[1] : "";
 
   const auto start = std::chrono::system_clock::now();
@@ -24,12 +25,7 @@ int main(int argc, char *argv[]) {
       start.time_since_epoch()).count();
   const std::time_t start_t = std::chrono::system_clock::to_time_t(start);
 
-  char startTimeStr[std::size("yymmdd-HHMMSS")];
-  int nbytes = std::strftime(std::data(startTimeStr), std::size(startTimeStr),
-      "%y%m%d-%H%M%S", std::localtime(&start_t));
-  EXIT_IF(nbytes <= 0, "failed to format time");
-  std::string fOutput = std::string(OutputPrefix)
-      + startTimeStr + "_" + std::to_string(start_ts) + outputPostfix;
+  std::string fOutput = get_filename(start, OutputPrefix, outputPostfix);
   std::ofstream ofsOutput(fOutput,
       std::ios_base::binary | std::ios_base::out | std::ios_base::app);
   EXIT_IF(!ofsOutput, "failed to open " + fOutput);
@@ -50,8 +46,9 @@ int main(int argc, char *argv[]) {
 
   while (true) {
     EXIT_IF(!bmp.performReading(), "failed to perform reading");
-    float atmospheric = bmp.pressure / 100.0F;
-    float altitude = 44330.0 * (1.0 - pow(atmospheric / SEALEVELPRESSURE_HPA, 0.1903));
+    float atmospheric = bmp.pressure / 100.0;
+    float altitude = (bmp.temperature + 273.15) / 0.0065
+      * (1.0 - pow(atmospheric / SEALEVELPRESSURE_HPA, 0.1903));
     const auto now = std::chrono::system_clock::now();
     const auto lapse = now - start;
     ofsOutput << std::chrono::duration_cast<std::chrono::nanoseconds>(lapse).count()
