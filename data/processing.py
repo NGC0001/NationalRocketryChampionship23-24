@@ -108,6 +108,7 @@ if __name__ == "__main__":
     ax1.plot(time_func(height_timestamps), heights, color=color, linewidth=linewidth)
     ax1.plot(time_func(geiger_timestamps), geiger_heights, '.', markersize=1.0, color="tab:red")
     ax1.tick_params(axis="y", labelcolor=color)
+    # ax1.set_ylim([0, 600])
 
     ax2 = ax1.twinx()
 
