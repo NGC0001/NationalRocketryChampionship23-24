@@ -1,1 +1,0 @@
-- [] check startup of geiger and altimeter; check system clock without network
